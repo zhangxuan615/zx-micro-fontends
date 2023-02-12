@@ -41,6 +41,7 @@ export const runMounted = async (app: IInternalAppInfo) => {
 
   // 子应用挂载
   app.status = AppStatusEn.MOUNTING;
+  // 保证挂载节点必须存在
   const dom = document.querySelector(app.container);
   if (!dom) {
     throw new Error('容器不存在');

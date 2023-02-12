@@ -9,13 +9,15 @@ import { getAppListStatus } from './_utils';
 
 let capturedPopstateListeners: Function[] = [];
 
-// 劫持和 history  相关的事件和函数
+// 劫持 history 相关的事件和函数
 // 然后我们在劫持的方法里做一些自己的事情
-// 比如说在 URL 发生改变的时候判断当前是否切换了子应用
+//  比如说在 URL 发生改变的时候判断当前是否切换了子应用
 
 // 保存原有方法
 const originalPush = window.history.pushState;
 const originalReplace = window.history.replaceState;
+const originalAddEventListener = window.addEventListener;
+const originalRemoveEventListener = window.removeEventListener;
 
 let lastUrl: string | null = null;
 let lastApp: IInternalAppInfo | null = null;
@@ -28,14 +30,17 @@ export const reRoute = async (
   if (curPathname !== lastUrl) {
     const { activeApp, unmountApp } = getAppListStatus(); // 找出将要激活的子应用、将要卸载的子应用
     // 1. 先卸载已有的子应用
-    unmountApp && (await runUnmounted(unmountApp));
+    if (unmountApp) {
+      await runUnmounted(unmountApp);
+    }
 
     if (activeApp && activeApp !== lastApp) {
       // 2. 挂载激活的子应用：
       // 2.1 第一次挂载
-      activeApp?.status === AppStatusEn.NOT_LOADED &&
-        (await runBeforeLoad(activeApp)) &&
-        (await runBoostrap(activeApp));
+      if (activeApp?.status === AppStatusEn.NOT_LOADED) {
+        await runBeforeLoad(activeApp);
+        await runBoostrap(activeApp);
+      }
       // 2.2 后续再次挂载
       await runMounted(activeApp);
 
@@ -58,26 +63,36 @@ export const reRoute = async (
  * 3. 劫持 addEventListener、removeEventListener 事件
  */
 export const listenRoute = () => {
-  // div.click 与div.dispatchEvent 都是同步的
-
+  // div.click 与 div.dispatchEvent 都是同步的
   // const mouseEvent = new MouseEvent('click', {});
-  // div1.dispatchEvent(mouseEvent);
+  // div.dispatchEvent(mouseEvent);
+
   // 1. 重写 pushState 以及 replaceState 方法
   window.history.pushState = (data: any, unused: string, url: string) => {
-    originalPush.call(this, data, unused, url);
+    if (url.startsWith(location.pathname)) {
+      return;
+    }
+
+    originalPush.call(null, data, unused, url);
     url && reRoute(url);
   };
   window.history.replaceState = (data: any, unused: string, url: string) => {
-    originalReplace.call(this, data, unused, url);
+    if (url.startsWith(location.pathname)) {
+      return;
+    }
+
+    originalReplace.call(null, data, unused, url);
     url && reRoute(url);
   };
-
   // 2. 监听 popstate 事件
   window.addEventListener('popstate', (e) => reRoute(location.pathname, e));
+  /**
+   * 两种改变路由方式：
+   *    a. history.back/forward/go: 能够触发 popState 事件
+   *    b. history.pushState/replaceState: 不能够触发 popState 事件
+   */
 
   // 3. 劫持 addEventListener、removeEventListener 事件
-  const originalAddEventListener = window.addEventListener;
-  const originalRemoveEventListener = window.addEventListener;
   window.addEventListener = function (name: string, fn: any) {
     if (
       name === 'popstate' &&

@@ -4,7 +4,7 @@ import { AppStatusEn, IInternalAppInfo } from 'src/types';
 /**
  * 判断当前路由是否激活子应用
  */
-function getAppIsActive(curPathname: string, app: IInternalAppInfo) {
+function isActiveApp(curPathname: string, app: IInternalAppInfo) {
   const { activeRule } = app;
 
   let isActive = false;
@@ -39,7 +39,7 @@ export const getAppListStatus = (curPathname: string = location.pathname) => {
   const appList = getAppList(); // 获取所有子应用信息
   appList.forEach((app) => {
     // 判断 子应用路由 是否为当前页面路由
-    let isActive = getAppIsActive(curPathname, app);
+    let isActive = isActiveApp(curPathname, app);
     switch (app.status) {
       case AppStatusEn.NOT_LOADED:
       case AppStatusEn.LOADING:
