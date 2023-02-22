@@ -17,6 +17,18 @@ export const getLifeCycle = () => {
 
 /**
  * 子应用生命周期
+ *   1. 加载资源 load
+ *      1.1 主应用 beforeLoad
+ *   2. 首次启动 bootstrap
+ *      2.1 子应用 bootstrap
+ *   3. 挂载 mount
+ *      3.1 主应用 beforeMount
+ *      3.2 子应用 mount
+ *      3.3 主应用 afterMount
+ *   4. 卸载 unmount
+ *      4.1 主应用 beforeUnmount
+ *      4.2 子应用 unmount
+ *      4.3 主应用 afterUnmount
  */
 // 加载子应用资源
 export const runBeforeLoad = async (app: IInternalAppInfo) => {

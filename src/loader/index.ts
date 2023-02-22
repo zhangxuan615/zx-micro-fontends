@@ -1,6 +1,6 @@
-import { IInternalAppInfo } from '../types';
 import { importEntry } from 'import-html-entry';
 import { ProxySandbox } from './ProxySandbox';
+import { IInternalAppInfo } from '../types';
 
 /**
  * 使用 import-html-entry 库加载解析静态资源
@@ -15,7 +15,7 @@ export const loadHTML = async (app: IInternalAppInfo) => {
   // template：处理 HTML 文本未 HTML 文档对象
   // getExternalStyleSheets：fetch CSS 文件
   // getExternalScripts：fetch JS 文件
-  const { template, getExternalScripts, getExternalStyleSheets } =
+  const { template, getExternalStyleSheets, getExternalScripts } =
     await importEntry(entry);
 
   // b. 处理 css 样式资源与 js 资源

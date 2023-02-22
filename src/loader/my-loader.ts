@@ -12,7 +12,7 @@ const inlineScript: string[] = []; // js 脚本内联内容
 export const loadHTML = async (app: IInternalAppInfo) => {
   const { entry, name } = app;
 
-  // 1. 加载 html 资源，并解析为 HTML 文档输
+  // 1. 加载 html 资源，并解析为 HTML 文档
   const htmlFile = await fetchResource(entry, name);
   const fakeContainer = document.createElement('div');
   fakeContainer.innerHTML = htmlFile;

@@ -58,7 +58,10 @@ export const reRoute = async (
 
 /**
  * 路由劫持：核心代码
- * 1. 重写 pushState 以及 replaceState 方法
+ * 两种改变路由方式：
+ *  a. history.back/forward/go: 能够触发 popState 事件
+ *  b. history.pushState/replaceState: 不能够触发 popState 事件
+ * 1. 劫持 pushState 以及 replaceState 方法
  * 2. 监听 popstate 事件
  * 3. 劫持 addEventListener、removeEventListener 事件
  */
@@ -67,8 +70,9 @@ export const listenRoute = () => {
   // const mouseEvent = new MouseEvent('click', {});
   // div.dispatchEvent(mouseEvent);
 
-  // 1. 重写 pushState 以及 replaceState 方法
+  // 1. 劫持 pushState 以及 replaceState 方法
   window.history.pushState = (data: any, unused: string, url: string) => {
+    // 切换路由同当前路由相同，不触发
     if (url.startsWith(location.pathname)) {
       return;
     }
@@ -77,6 +81,7 @@ export const listenRoute = () => {
     url && reRoute(url);
   };
   window.history.replaceState = (data: any, unused: string, url: string) => {
+    // 切换路由同当前路由相同，不触发
     if (url.startsWith(location.pathname)) {
       return;
     }
@@ -84,13 +89,9 @@ export const listenRoute = () => {
     originalReplace.call(null, data, unused, url);
     url && reRoute(url);
   };
+
   // 2. 监听 popstate 事件
   window.addEventListener('popstate', (e) => reRoute(location.pathname, e));
-  /**
-   * 两种改变路由方式：
-   *    a. history.back/forward/go: 能够触发 popState 事件
-   *    b. history.pushState/replaceState: 不能够触发 popState 事件
-   */
 
   // 3. 劫持 addEventListener、removeEventListener 事件
   window.addEventListener = function (name: string, fn: any) {
